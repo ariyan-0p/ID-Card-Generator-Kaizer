@@ -50,7 +50,7 @@ function App() {
   const [saveStatus, setSaveStatus] = useState('');
   const [saveMessage, setSaveMessage] = useState('');
 
-  const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyZJxeM9fibI5Ob0WDmsyOksExyOWjCSk7q-F_EZSyAcFJi1OhKpkfje4vTOfqbeJsn/exec';
+  const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzmgdjq1DA05yafCcYeP6xYzcKgduuBtJ1Znrmx5T9MUvzmKJhbVN1wYMza7OSVwlRr/exec';
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -84,12 +84,19 @@ function App() {
     setCroppedImageUrl(finalCroppedImage);
     setModalIsOpen(false);
   }
+  
+  const formatDate = (date) => {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
 
-  const saveDataToSheet = async (idNumber) => {
+  const saveDataToSheet = async (idNumber, issuedDate, expiresOn) => {
     setIsSaving(true);
     setSaveStatus('');
     setSaveMessage('');
-    const dataToSave = { name, dob, aadhar, idNumber, city, state, pincode, whatsapp };
+    const dataToSave = { name, dob, aadhar, idNumber, city, state, pincode, whatsapp, issuedDate, expiresOn };
 
     const formData = new FormData();
     formData.append('data', JSON.stringify(dataToSave));
@@ -123,35 +130,46 @@ function App() {
 
     template.onload = () => {
       ctx.drawImage(template, 0, 0, canvas.width, canvas.height);
+      
       const userPhoto = new Image();
       userPhoto.src = croppedImageUrl;
 
       userPhoto.onload = () => {
-        const photoSize = 144;
-        const photoX = canvas.width / 2 - photoSize / 2;
-        const photoY = 107;
+        const issuedDate = new Date();
+        const expiresOn = new Date(issuedDate);
+        expiresOn.setMonth(issuedDate.getMonth() + 6);
         
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(photoX + photoSize / 2, photoY + photoSize / 2, photoSize / 2, 0, Math.PI * 2, true);
-        ctx.closePath();
-        ctx.clip();
-        ctx.drawImage(userPhoto, photoX, photoY, photoSize, photoSize);
-        ctx.restore();
+        const formattedIssuedDate = formatDate(issuedDate);
+        const formattedExpiresOn = formatDate(expiresOn);
 
-        const mainFont = "bold 28px 'Segoe UI', Arial";
+        // --- CIRCULAR PHOTO DRAWING LOGIC ---
+        const photoSize = 144; // Maintain a good size for the circle
+        const photoX = canvas.width / 2 - photoSize / 2;
+        const photoY = 107; // Adjusted to be slightly higher, as it was before.
+        
+        ctx.save(); // Save the current state of the canvas
+        ctx.beginPath(); // Start drawing a path
+        // Draw a circle for clipping
+        ctx.arc(photoX + photoSize / 2, photoY + photoSize / 2, photoSize / 2, 0, Math.PI * 2, true);
+        ctx.closePath(); // Close the path
+        ctx.clip(); // Clip everything outside this path
+        
+        ctx.drawImage(userPhoto, photoX, photoY, photoSize, photoSize);
+        ctx.restore(); // Restore the canvas to its state before clipping
+
+        const mainFont = "bold 30px 'Segoe UI', Arial";
         const subFont = "16px 'Segoe UI', Arial";
         const detailFont = "bold 22px 'Segoe UI', Arial";
         const detailDataFont = "22px 'Segoe UI', Arial";
-
-        ctx.fillStyle = '#FFFFFF';
+        const dateFont = "bold 11px 'Segoe UI', Arial";
+        
         ctx.textAlign = 'center';
         
+        ctx.fillStyle = '#FFFFFF';
         ctx.font = mainFont;
-        ctx.fillText(name.toUpperCase(), canvas.width / 2, 365);
-        
+        ctx.fillText(name.toUpperCase(), canvas.width / 2, 400);
         ctx.font = subFont;
-        ctx.fillText('FIELD REPORTER', canvas.width / 2, 392);
+        ctx.fillText('FIELD REPORTER', canvas.width / 2, 425);
         
         const dayOfBirth = dob.split('-')[2];
         const lastTwoAadhar = aadhar.slice(-2);
@@ -159,18 +177,22 @@ function App() {
 
         ctx.textAlign = 'left';
         ctx.font = detailFont;
-        ctx.fillText('ID NO', 75, 485);
-        ctx.fillText('DOB', 75, 520);
-        ctx.fillText(':', 150, 485);
-        ctx.fillText(':', 150, 520);
+        ctx.fillText('ID NO', 80, 480);
+        ctx.fillText('DOB', 80, 515);
+        ctx.fillText(':', 160, 480);
+        ctx.fillText(':', 160, 515);
         
         ctx.font = detailDataFont;
-        ctx.fillText(idNumber.toUpperCase(), 170, 485); 
-        ctx.fillText(dob.split('-').reverse().join('-'), 170, 520);
+        ctx.fillText(idNumber.toUpperCase(), 180, 480); 
+        ctx.fillText(dob.split('-').reverse().join('-'), 180, 515);
+        
+        ctx.textAlign = 'center';
+        ctx.font = dateFont;
+        ctx.fillText(`Issued: ${formattedIssuedDate} | Expires: ${formattedExpiresOn}`, canvas.width / 2, 550);
         
         const url = canvas.toDataURL('image/png');
         setDownloadUrl(url);
-        saveDataToSheet(idNumber);
+        saveDataToSheet(idNumber, formattedIssuedDate, formattedExpiresOn);
       };
     };
   };
