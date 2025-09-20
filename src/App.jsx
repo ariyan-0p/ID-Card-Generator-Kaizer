@@ -8,6 +8,35 @@ import templateSrc from './assets/id-card-template.png';
 
 Modal.setAppElement('#root');
 
+// FIX 1: Re-added the inline styles for the modal
+const customModalStyles = {
+  overlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  content: {
+    position: 'relative',
+    inset: 'auto',
+    background: 'white',
+    padding: '20px',
+    borderRadius: '12px',
+    maxWidth: '500px',
+    maxHeight: '90vh',
+    width: '90%',
+    overflow: 'auto',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+};
+
 function getCroppedImg(image, crop) {
   const canvas = document.createElement('canvas');
   const scaleX = image.naturalWidth / image.width;
@@ -132,6 +161,8 @@ function App() {
       ctx.drawImage(template, 0, 0, canvas.width, canvas.height);
       
       const userPhoto = new Image();
+      // FIX 2: Re-added this line to prevent the square photo bug
+      userPhoto.crossOrigin = 'Anonymous';
       userPhoto.src = croppedImageUrl;
 
       userPhoto.onload = () => {
@@ -143,19 +174,18 @@ function App() {
         const formattedExpiresOn = formatDate(expiresOn);
 
         // --- CIRCULAR PHOTO DRAWING LOGIC ---
-        const photoSize = 144; // Maintain a good size for the circle
+        const photoSize = 144;
         const photoX = canvas.width / 2 - photoSize / 2;
-        const photoY = 107; // Adjusted to be slightly higher, as it was before.
+        const photoY = 107;
         
-        ctx.save(); // Save the current state of the canvas
-        ctx.beginPath(); // Start drawing a path
-        // Draw a circle for clipping
+        ctx.save();
+        ctx.beginPath();
         ctx.arc(photoX + photoSize / 2, photoY + photoSize / 2, photoSize / 2, 0, Math.PI * 2, true);
-        ctx.closePath(); // Close the path
-        ctx.clip(); // Clip everything outside this path
+        ctx.closePath();
+        ctx.clip();
         
         ctx.drawImage(userPhoto, photoX, photoY, photoSize, photoSize);
-        ctx.restore(); // Restore the canvas to its state before clipping
+        ctx.restore();
 
         const mainFont = "bold 30px 'Segoe UI', Arial";
         const subFont = "16px 'Segoe UI', Arial";
@@ -251,8 +281,7 @@ function App() {
       <Modal
         isOpen={modalIsOpen}
         onRequestClose={() => setModalIsOpen(false)}
-        className="crop-modal-content"
-        overlayClassName="crop-modal-overlay"
+        style={customModalStyles} // Use the inline styles
       >
         <h2>Crop Your Photo</h2>
         {imgSrc && (
@@ -265,7 +294,7 @@ function App() {
             <img ref={imgRef} alt="Crop me" src={imgSrc} onLoad={onImageLoad} />
           </ReactCrop>
         )}
-        <button onClick={handleApplyCrop} className="input-form-button crop-button">
+        <button onClick={handleApplyCrop} className="crop-button">
           Apply Crop
         </button>
       </Modal>

@@ -68,10 +68,6 @@ h1 {
   transition: background-color 0.2s ease;
 }
 
-.input-form button:hover {
-  background-color: #0056b3;
-}
-
 .input-form button:disabled {
   background-color: #a0c3e6;
   cursor: not-allowed;
@@ -84,29 +80,18 @@ h1 {
   font-weight: bold;
   text-decoration: none;
   margin-top: 5px;
-  transition: background-color 0.2s ease;
 }
 
-.download-btn:hover {
-  background-color: #218838;
-}
-
-.success-message,
-.error-message {
+.success-message, .error-message {
   font-weight: bold;
   margin-top: 10px;
   text-align: center;
 }
 
-.success-message {
-  color: #28a745;
-}
+.success-message { color: #28a745; }
+.error-message { color: #dc3545; }
 
-.error-message {
-  color: #dc3545;
-}
-
-/* Styles for Photo Upload and Cropping */
+/* Styles for Photo Upload and Preview */
 .photo-upload-section {
   display: flex;
   align-items: center;
@@ -129,71 +114,31 @@ h1 {
   border: 2px dashed #ccc;
   text-align: center;
   cursor: pointer;
-  transition: border-color 0.2s, background-color 0.2s;
-}
-
-.photo-upload-label:hover {
-  border-color: #007bff;
-  background-color: #f8f9fa;
 }
 
 .photo-upload-label input[type="file"] {
   display: none;
 }
 
-/* === CROPPER FIX STARTS HERE === */
+/* --- Essential Cropper Styles --- */
 
-.crop-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.75);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 1rem;
+/* Styles the image INSIDE the cropper to prevent zooming issues */
+.ReactCrop .ReactCrop__image {
+  max-width: 100%;
+  max-height: 65vh; /* Limits image height to fit in the modal */
 }
 
-.crop-modal-content {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  width: auto;
-  max-width: 500px;
-  max-height: calc(90vh - 20px); /* Slightly reduce max-height to ensure button space */
-  display: flex;
-  flex-direction: column; /* Arrange items vertically */
-  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-  justify-content: space-between; /* Distribute space to push button to bottom */
-}
-
-.crop-modal-content h2 {
-  flex-shrink: 0; /* Prevent the title from shrinking */
-  margin-top: 0; /* Ensure no extra margin at the top */
-  margin-bottom: 15px; /* Add some space below the title */
-}
-
-.ReactCrop {
-  flex-grow: 1;    /* Allow the cropper to fill available space */
-  flex-shrink: 1;  /* Allow the cropper to shrink if needed */
-  min-height: 0;   /* This is key for shrinking to work correctly */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* Removed margin-bottom: 15px; - this was pushing the button down */
-}
-
-.ReactCrop img {
-  max-height: 100%; /* Image will not exceed the flexible container height */
-  object-fit: contain;
-}
-
+/* Styles the "Apply Crop" button inside the modal */
 .crop-button {
   width: 100%;
-  flex-shrink: 0; /* Prevent the button from shrinking */
+  flex-shrink: 0;
   background-color: #28a745;
-  margin-top: 15px; /* Add margin above the button for spacing */
+  color: white;
+  border: none;
+  margin-top: 15px;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
 }
